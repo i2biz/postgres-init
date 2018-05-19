@@ -1,0 +1,14 @@
+---
+
+postgres_init_apt_dependencies:
+  - python-psycopg2
+
+postgres_init_host: localhost
+postgres_init_port: 5432
+postgres_init_login_root_user: postgres
+postgres_init_login_root_password: null
+
+postgres_init_users: []
+postgres_init_databases: []
+postgres_init_user_priveleges: []
+postgres_init_extensions: []

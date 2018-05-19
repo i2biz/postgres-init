@@ -1,0 +1,18 @@
+galaxy_info:
+  author: Jacek Bzdak <jacek@askesis.pl>
+  description: Creates databases and users on postgresql server.
+
+  license: MIT
+
+  min_ansible_version: 2.2
+
+  platforms:
+    - name: Debian
+      versions:
+      - all
+
+  galaxy_tags:
+    - postgresql
+    - postgres
+
+dependencies: []

@@ -1,0 +1,57 @@
+---
+- name: check preconditions
+  fail:
+    msg: "Please set postgres_init_login_root_password"
+  when: postgres_init_login_root_password is none
+
+- name: install psycopg2
+  apt: name={{ item }} state=present
+  with_items: "{{ postgres_init_apt_dependencies }}"
+
+# Since in the next step we will drop users, we need to drop databases first
+# as it is quite possible that dropped users will own some of the databases.
+- name: drop databases
+  postgresql_db:
+    login_host: "{{ postgres_init_host }}"
+    login_user: "{{ postgres_init_login_root_user }}"
+    login_password: "{{ postgres_init_login_root_password }}"
+    port: "{{ postgres_init_port }}"
+
+    name: "{{ item.name }}"
+    owner: "{{ item.owner |default(postgres_init_login_root_user) }}"
+    state: "{{ item.state | default('present') }}"
+    template: "{{ item.template|default('template1') }}"
+  with_items: "{{ postgres_init_users }}"
+  when: "item.state is defined and item.state == 'absent'"
+  no_log: True
+
+- name: create users
+  postgresql_user:
+    login_host: "{{ postgres_init_host }}"
+    login_user: "{{ postgres_init_login_root_user }}"
+    login_password: "{{ postgres_init_login_root_password }}"
+    port: "{{ postgres_init_port }}"
+
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    encrypted: "yes"
+    role_attr_flags: "{{ item.role_attrs|default('NOSUPERUSER,NOCREATEROLE,LOGIN') }}"
+    state: "{{ item.state | default('present') }}"
+  with_items: "{{ postgres_init_users }}"
+  no_log: True
+
+- name: create databases
+  postgresql_db:
+    login_host: "{{ postgres_init_host }}"
+    login_user: "{{ postgres_init_login_root_user }}"
+    login_password: "{{ postgres_init_login_root_password }}"
+    port: "{{ postgres_init_port }}"
+
+    name: "{{ item.name }}"
+    owner: "{{ item.owner | default(postgres_init_login_root_user) }}"
+    state: "{{ item.state | default('present') }}"
+    template: "{{ item.template|default('template1') }}"
+  with_items: "{{ postgres_init_databases  }}"
+  no_log: True
+
+
